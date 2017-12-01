@@ -1,4 +1,3 @@
-using System.Collections.Generic;
 using System.Collections.ObjectModel;
 
 namespace yungching_web_WebAPI.Areas.HelpPage.ModelDescriptions

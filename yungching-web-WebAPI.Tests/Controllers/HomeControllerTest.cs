@@ -1,6 +1,5 @@
 ﻿using System.Web.Mvc;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using yungching_web_WebAPI;
 using yungching_web_WebAPI.Controllers;
 
 namespace yungching_web_WebAPI.Tests.Controllers
