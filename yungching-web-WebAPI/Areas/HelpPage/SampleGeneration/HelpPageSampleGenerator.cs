@@ -95,9 +95,8 @@ namespace yungching_web_WebAPI.Areas.HelpPage
             }
             string controllerName = api.ActionDescriptor.ControllerDescriptor.ControllerName;
             string actionName = api.ActionDescriptor.ActionName;
-            IEnumerable<string> parameterNames = api.ParameterDescriptions.Select(p => p.Name);
-            Collection<MediaTypeFormatter> formatters;
-            Type type = ResolveType(api, controllerName, actionName, parameterNames, sampleDirection, out formatters);
+            var parameterNames = api.ParameterDescriptions.Select(p => p.Name);
+            var type = ResolveType(api, controllerName, actionName, parameterNames, sampleDirection, out Collection<MediaTypeFormatter> formatters);
             var samples = new Dictionary<MediaTypeHeaderValue, object>();
 
             // Use the samples provided directly for actions
@@ -114,7 +113,7 @@ namespace yungching_web_WebAPI.Areas.HelpPage
                 object sampleObject = GetSampleObject(type);
                 foreach (var formatter in formatters)
                 {
-                    foreach (MediaTypeHeaderValue mediaType in formatter.SupportedMediaTypes)
+                    foreach (var mediaType in formatter.SupportedMediaTypes)
                     {
                         if (!samples.ContainsKey(mediaType))
                         {
@@ -148,13 +147,12 @@ namespace yungching_web_WebAPI.Areas.HelpPage
         /// <returns>The sample that matches the parameters.</returns>
         public virtual object GetActionSample(string controllerName, string actionName, IEnumerable<string> parameterNames, Type type, MediaTypeFormatter formatter, MediaTypeHeaderValue mediaType, SampleDirection sampleDirection)
         {
-            object sample;
 
             // First, try to get the sample provided for the specified mediaType, sampleDirection, controllerName, actionName and parameterNames.
             // If not found, try to get the sample provided for the specified mediaType, sampleDirection, controllerName and actionName regardless of the parameterNames.
             // If still not found, try to get the sample provided for the specified mediaType and type.
             // Finally, try to get the sample provided for the specified mediaType.
-            if (ActionSamples.TryGetValue(new HelpPageSampleKey(mediaType, sampleDirection, controllerName, actionName, parameterNames), out sample) ||
+            if (ActionSamples.TryGetValue(new HelpPageSampleKey(mediaType, sampleDirection, controllerName, actionName, parameterNames), out object sample) ||
                 ActionSamples.TryGetValue(new HelpPageSampleKey(mediaType, sampleDirection, controllerName, actionName, new[] { "*" }), out sample) ||
                 ActionSamples.TryGetValue(new HelpPageSampleKey(mediaType, type), out sample) ||
                 ActionSamples.TryGetValue(new HelpPageSampleKey(mediaType), out sample))
@@ -177,12 +175,11 @@ namespace yungching_web_WebAPI.Areas.HelpPage
             Justification = "Even if all items in SampleObjectFactories throw, problem will be visible as missing sample.")]
         public virtual object GetSampleObject(Type type)
         {
-            object sampleObject;
 
-            if (!SampleObjects.TryGetValue(type, out sampleObject))
+            if (!SampleObjects.TryGetValue(type, out object sampleObject))
             {
                 // No specific object available, try our factories.
-                foreach (Func<HelpPageSampleGenerator, Type, object> factory in SampleObjectFactories)
+                foreach (var factory in SampleObjectFactories)
                 {
                     if (factory == null)
                     {
@@ -217,8 +214,7 @@ namespace yungching_web_WebAPI.Areas.HelpPage
             string controllerName = api.ActionDescriptor.ControllerDescriptor.ControllerName;
             string actionName = api.ActionDescriptor.ActionName;
             IEnumerable<string> parameterNames = api.ParameterDescriptions.Select(p => p.Name);
-            Collection<MediaTypeFormatter> formatters;
-            return ResolveType(api, controllerName, actionName, parameterNames, SampleDirection.Request, out formatters);
+            return ResolveType(api, controllerName, actionName, parameterNames, SampleDirection.Request, out Collection<MediaTypeFormatter> formatters);
         }
 
         /// <summary>
@@ -241,12 +237,11 @@ namespace yungching_web_WebAPI.Areas.HelpPage
             {
                 throw new ArgumentNullException("api");
             }
-            Type type;
-            if (ActualHttpMessageTypes.TryGetValue(new HelpPageSampleKey(sampleDirection, controllerName, actionName, parameterNames), out type) ||
+            if (ActualHttpMessageTypes.TryGetValue(new HelpPageSampleKey(sampleDirection, controllerName, actionName, parameterNames), out Type type) ||
                 ActualHttpMessageTypes.TryGetValue(new HelpPageSampleKey(sampleDirection, controllerName, actionName, new[] { "*" }), out type))
             {
                 // Re-compute the supported formatters based on type
-                Collection<MediaTypeFormatter> newFormatters = new Collection<MediaTypeFormatter>();
+                var newFormatters = new Collection<MediaTypeFormatter>();
                 foreach (var formatter in api.ActionDescriptor.Configuration.Formatters)
                 {
                     if (IsFormatSupported(sampleDirection, formatter, type))
@@ -261,8 +256,8 @@ namespace yungching_web_WebAPI.Areas.HelpPage
                 switch (sampleDirection)
                 {
                     case SampleDirection.Request:
-                        ApiParameterDescription requestBodyParameter = api.ParameterDescriptions.FirstOrDefault(p => p.Source == ApiParameterSource.FromBody);
-                        type = requestBodyParameter == null ? null : requestBodyParameter.ParameterDescriptor.ParameterType;
+                        var requestBodyParameter = api.ParameterDescriptions.FirstOrDefault(p => p.Source == ApiParameterSource.FromBody);
+                        type = requestBodyParameter?.ParameterDescriptor.ParameterType;
                         formatters = api.SupportedRequestBodyFormatters;
                         break;
 
@@ -308,7 +303,7 @@ namespace yungching_web_WebAPI.Areas.HelpPage
                     content = new ObjectContent(type, value, formatter, mediaType);
                     formatter.WriteToStreamAsync(type, value, ms, content, null).Wait();
                     ms.Position = 0;
-                    StreamReader reader = new StreamReader(ms);
+                    var reader = new StreamReader(ms);
                     string serializedSampleString = reader.ReadToEnd();
                     if (mediaType.MediaType.ToUpperInvariant().Contains("XML"))
                     {
@@ -357,8 +352,7 @@ namespace yungching_web_WebAPI.Areas.HelpPage
 
         internal static Exception UnwrapException(Exception exception)
         {
-            AggregateException aggregateException = exception as AggregateException;
-            if (aggregateException != null)
+            if (exception is AggregateException aggregateException)
             {
                 return aggregateException.Flatten().InnerException;
             }
@@ -369,7 +363,7 @@ namespace yungching_web_WebAPI.Areas.HelpPage
         private static object DefaultSampleObjectFactory(HelpPageSampleGenerator sampleGenerator, Type type)
         {
             // Try to create a default sample object
-            ObjectGenerator objectGenerator = new ObjectGenerator();
+            var objectGenerator = new ObjectGenerator();
             return objectGenerator.GenerateObject(type);
         }
 
@@ -393,7 +387,7 @@ namespace yungching_web_WebAPI.Areas.HelpPage
         {
             try
             {
-                XDocument xml = XDocument.Parse(str);
+                var xml = XDocument.Parse(str);
                 return xml.ToString();
             }
             catch
@@ -418,10 +412,10 @@ namespace yungching_web_WebAPI.Areas.HelpPage
 
         private IEnumerable<KeyValuePair<HelpPageSampleKey, object>> GetAllActionSamples(string controllerName, string actionName, IEnumerable<string> parameterNames, SampleDirection sampleDirection)
         {
-            HashSet<string> parameterNamesSet = new HashSet<string>(parameterNames, StringComparer.OrdinalIgnoreCase);
+            var parameterNamesSet = new HashSet<string>(parameterNames, StringComparer.OrdinalIgnoreCase);
             foreach (var sample in ActionSamples)
             {
-                HelpPageSampleKey sampleKey = sample.Key;
+                var sampleKey = sample.Key;
                 if (String.Equals(controllerName, sampleKey.ControllerName, StringComparison.OrdinalIgnoreCase) &&
                     String.Equals(actionName, sampleKey.ActionName, StringComparison.OrdinalIgnoreCase) &&
                     (sampleKey.ParameterNames.SetEquals(new[] { "*" }) || parameterNamesSet.SetEquals(sampleKey.ParameterNames)) &&
@@ -434,8 +428,7 @@ namespace yungching_web_WebAPI.Areas.HelpPage
 
         private static object WrapSampleIfString(object sample)
         {
-            string stringSample = sample as string;
-            if (stringSample != null)
+            if (sample is string stringSample)
             {
                 return new TextSample(stringSample);
             }

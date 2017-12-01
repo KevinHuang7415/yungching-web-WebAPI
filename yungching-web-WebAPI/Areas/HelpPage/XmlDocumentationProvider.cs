@@ -31,32 +31,31 @@ namespace yungching_web_WebAPI.Areas.HelpPage
             {
                 throw new ArgumentNullException("documentPath");
             }
-            XPathDocument xpath = new XPathDocument(documentPath);
+            var xpath = new XPathDocument(documentPath);
             _documentNavigator = xpath.CreateNavigator();
         }
 
         public string GetDocumentation(HttpControllerDescriptor controllerDescriptor)
         {
-            XPathNavigator typeNode = GetTypeNode(controllerDescriptor.ControllerType);
+            var typeNode = GetTypeNode(controllerDescriptor.ControllerType);
             return GetTagValue(typeNode, "summary");
         }
 
         public virtual string GetDocumentation(HttpActionDescriptor actionDescriptor)
         {
-            XPathNavigator methodNode = GetMethodNode(actionDescriptor);
+            var methodNode = GetMethodNode(actionDescriptor);
             return GetTagValue(methodNode, "summary");
         }
 
         public virtual string GetDocumentation(HttpParameterDescriptor parameterDescriptor)
         {
-            ReflectedHttpParameterDescriptor reflectedParameterDescriptor = parameterDescriptor as ReflectedHttpParameterDescriptor;
-            if (reflectedParameterDescriptor != null)
+            if (parameterDescriptor is ReflectedHttpParameterDescriptor reflectedParameterDescriptor)
             {
-                XPathNavigator methodNode = GetMethodNode(reflectedParameterDescriptor.ActionDescriptor);
+                var methodNode = GetMethodNode(reflectedParameterDescriptor.ActionDescriptor);
                 if (methodNode != null)
                 {
                     string parameterName = reflectedParameterDescriptor.ParameterInfo.Name;
-                    XPathNavigator parameterNode = methodNode.SelectSingleNode(String.Format(CultureInfo.InvariantCulture, ParameterExpression, parameterName));
+                    var parameterNode = methodNode.SelectSingleNode(String.Format(CultureInfo.InvariantCulture, ParameterExpression, parameterName));
                     if (parameterNode != null)
                     {
                         return parameterNode.Value.Trim();
@@ -69,7 +68,7 @@ namespace yungching_web_WebAPI.Areas.HelpPage
 
         public string GetResponseDocumentation(HttpActionDescriptor actionDescriptor)
         {
-            XPathNavigator methodNode = GetMethodNode(actionDescriptor);
+            var methodNode = GetMethodNode(actionDescriptor);
             return GetTagValue(methodNode, "returns");
         }
 
@@ -78,20 +77,19 @@ namespace yungching_web_WebAPI.Areas.HelpPage
             string memberName = String.Format(CultureInfo.InvariantCulture, "{0}.{1}", GetTypeName(member.DeclaringType), member.Name);
             string expression = member.MemberType == MemberTypes.Field ? FieldExpression : PropertyExpression;
             string selectExpression = String.Format(CultureInfo.InvariantCulture, expression, memberName);
-            XPathNavigator propertyNode = _documentNavigator.SelectSingleNode(selectExpression);
+            var propertyNode = _documentNavigator.SelectSingleNode(selectExpression);
             return GetTagValue(propertyNode, "summary");
         }
 
         public string GetDocumentation(Type type)
         {
-            XPathNavigator typeNode = GetTypeNode(type);
+            var typeNode = GetTypeNode(type);
             return GetTagValue(typeNode, "summary");
         }
 
         private XPathNavigator GetMethodNode(HttpActionDescriptor actionDescriptor)
         {
-            ReflectedHttpActionDescriptor reflectedActionDescriptor = actionDescriptor as ReflectedHttpActionDescriptor;
-            if (reflectedActionDescriptor != null)
+            if (actionDescriptor is ReflectedHttpActionDescriptor reflectedActionDescriptor)
             {
                 string selectExpression = String.Format(CultureInfo.InvariantCulture, MethodExpression, GetMemberName(reflectedActionDescriptor.MethodInfo));
                 return _documentNavigator.SelectSingleNode(selectExpression);
@@ -103,7 +101,7 @@ namespace yungching_web_WebAPI.Areas.HelpPage
         private static string GetMemberName(MethodInfo method)
         {
             string name = String.Format(CultureInfo.InvariantCulture, "{0}.{1}", GetTypeName(method.DeclaringType), method.Name);
-            ParameterInfo[] parameters = method.GetParameters();
+            var parameters = method.GetParameters();
             if (parameters.Length != 0)
             {
                 string[] parameterTypeNames = parameters.Select(param => GetTypeName(param.ParameterType)).ToArray();
@@ -117,7 +115,7 @@ namespace yungching_web_WebAPI.Areas.HelpPage
         {
             if (parentNode != null)
             {
-                XPathNavigator node = parentNode.SelectSingleNode(tagName);
+                var node = parentNode.SelectSingleNode(tagName);
                 if (node != null)
                 {
                     return node.Value.Trim();
@@ -140,8 +138,8 @@ namespace yungching_web_WebAPI.Areas.HelpPage
             if (type.IsGenericType)
             {
                 // Format the generic type name to something like: Generic{System.Int32,System.String}
-                Type genericType = type.GetGenericTypeDefinition();
-                Type[] genericArguments = type.GetGenericArguments();
+                var genericType = type.GetGenericTypeDefinition();
+                var genericArguments = type.GetGenericArguments();
                 string genericTypeName = genericType.FullName;
 
                 // Trim the generic parameter counts from the name

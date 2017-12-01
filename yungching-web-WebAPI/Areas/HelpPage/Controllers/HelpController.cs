@@ -2,7 +2,6 @@ using System;
 using System.Web.Http;
 using System.Web.Mvc;
 using yungching_web_WebAPI.Areas.HelpPage.ModelDescriptions;
-using yungching_web_WebAPI.Areas.HelpPage.Models;
 
 namespace yungching_web_WebAPI.Areas.HelpPage.Controllers
 {
@@ -35,7 +34,7 @@ namespace yungching_web_WebAPI.Areas.HelpPage.Controllers
         {
             if (!String.IsNullOrEmpty(apiId))
             {
-                HelpPageApiModel apiModel = Configuration.GetHelpPageApiModel(apiId);
+                var apiModel = Configuration.GetHelpPageApiModel(apiId);
                 if (apiModel != null)
                 {
                     return View(apiModel);
