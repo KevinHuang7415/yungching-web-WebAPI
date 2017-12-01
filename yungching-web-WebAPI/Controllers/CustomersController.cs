@@ -7,6 +7,9 @@ using yungching_web_WebAPI.Repository;
 
 namespace yungching_web_WebAPI.Controllers
 {
+    /// <summary>
+    /// Customer APIs.
+    /// </summary>
     public class CustomersController : ApiController
     {
         private IRepository<Customer> repo;
@@ -22,12 +25,21 @@ namespace yungching_web_WebAPI.Controllers
         }
 
         // GET: api/Customers
+        /// <summary>
+        /// Get all Customers.
+        /// </summary>
+        /// <returns>IQueryable&lt;Customer&gt;.</returns>
         public IQueryable<Customer> GetCustomers()
         {
             return repo.Reads();
         }
 
         // GET: api/Customers/5
+        /// <summary>
+        /// Get Customer.
+        /// </summary>
+        /// <param name="id">The identifier.</param>
+        /// <returns>IHttpActionResult.</returns>
         [ResponseType(typeof(Customer))]
         public IHttpActionResult GetCustomer(string id)
         {
@@ -41,8 +53,13 @@ namespace yungching_web_WebAPI.Controllers
         }
 
         // POST: api/Customers
+        /// <summary>
+        /// Create Customer.
+        /// </summary>
+        /// <param name="customer">The customer.</param>
+        /// <returns>IHttpActionResult.</returns>
         [ResponseType(typeof(Customer))]
-        public IHttpActionResult PostCustomer(Customer customer)
+        public IHttpActionResult PostCustomer([FromBody]Customer customer)
         {
             if (!ModelState.IsValid)
             {
@@ -67,8 +84,14 @@ namespace yungching_web_WebAPI.Controllers
         }
 
         // PUT: api/Customers/5
+        /// <summary>
+        /// Update Customer.
+        /// </summary>
+        /// <param name="id">The identifier.</param>
+        /// <param name="customer">The customer.</param>
+        /// <returns>IHttpActionResult.</returns>
         [ResponseType(typeof(void))]
-        public IHttpActionResult PutCustomer(string id, Customer customer)
+        public IHttpActionResult PutCustomer(string id, [FromBody]Customer customer)
         {
             if (!ModelState.IsValid)
             {
@@ -93,6 +116,11 @@ namespace yungching_web_WebAPI.Controllers
         }
 
         // DELETE: api/Customers/5
+        /// <summary>
+        /// Delete Customer.
+        /// </summary>
+        /// <param name="id">The identifier.</param>
+        /// <returns>IHttpActionResult.</returns>
         [ResponseType(typeof(Customer))]
         public IHttpActionResult DeleteCustomer(string id)
         {
